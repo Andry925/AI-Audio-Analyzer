@@ -14,4 +14,10 @@ urlpatterns = [
         name='register-user'),
     path('login',
          views.UserLoginView.as_view(),
-         name='login-user')]
+         name='login-user'),
+    path('logout',
+         views.UserLogoutView.as_view(),
+         name='logout-user'),
+    path('user',
+         views.CurrentUserView.as_view(),
+         name='current-user-information'), ]
