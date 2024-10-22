@@ -61,9 +61,8 @@ class UserLogoutView(APIView):
             refresh_token = request.data.get('refresh')
             token = RefreshToken(refresh_token)
             token.blacklist()
-            print(token)
             return Response(
-                {'detail': 'You have successfully logged out'}, status=status.HTTP_200_OK)
+                {'detail': 'You have successfully logged out'}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({'detail': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
