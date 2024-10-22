@@ -53,3 +53,9 @@ class UserLoginSerializer(serializers.Serializer):
         if not user:
             raise serializers.ValidationError(NOT_FOUND_MESSAGE)
         return user
+
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserCustomModel
+        fields = ('username', 'email', 'created_at')
