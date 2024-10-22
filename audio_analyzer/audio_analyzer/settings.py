@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'debug_toolbar',
+    'accounts',
 
 ]
 
@@ -86,6 +87,9 @@ DATABASES = {
         'PORT': config('DATABASE_PORT'),
     }
 }
+
+
+AUTH_USER_MODEL = 'accounts.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
