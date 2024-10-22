@@ -1,10 +1,12 @@
-from django.contrib.auth import login
+from django.contrib.auth import login, get_user_model
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import UserSerializer, UserLoginSerializer
+from .serializers import UserSerializer, UserLoginSerializer, CurrentUserSerializer
+
+UserCustomModel = get_user_model()
 
 
 class UserRegistrationView(APIView):
@@ -46,4 +48,31 @@ class UserLoginView(APIView):
             }
             login(request, user)
             return Response(data=response_data, status=status.HTTP_200_OK)
-        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get('refresh')
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            print(token)
+            return Response(
+                {'detail': 'You have successfully logged out'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'detail': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class CurrentUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def get(self, request):
+        user_data = UserCustomModel.objects.get(id=request.user.id)
+        serializer = CurrentUserSerializer(user_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
