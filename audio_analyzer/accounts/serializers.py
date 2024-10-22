@@ -1,6 +1,6 @@
 import re
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 
 SIGNUP_ERROR_MESSAGE = (
@@ -9,8 +9,6 @@ SIGNUP_ERROR_MESSAGE = (
     "one uppercase letter and one special character")
 
 NOT_FOUND_MESSAGE = "No such user, or incorrect credentials provided"
-
-EXISTING_USER_MESSAGE = "Such user already exists"
 
 UserCustomModel = get_user_model()
 
@@ -37,3 +35,21 @@ class UserSerializer(serializers.ModelSerializer):
     def regex_password_validator(password):
         pattern = r'^(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
         return bool(re.match(pattern, password))
+
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    class Meta:
+        model = UserCustomModel
+        fields = ('email', 'password')
+
+    @staticmethod
+    def authenticate_user(request_data):
+        email = request_data.get('email')
+        password = request_data.get('password')
+        user = authenticate(email=email, password=password)
+        if not user:
+            raise serializers.ValidationError(NOT_FOUND_MESSAGE)
+        return user
