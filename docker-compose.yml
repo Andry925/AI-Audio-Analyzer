@@ -20,7 +20,7 @@ services:
   postgres-db:
     image: postgres:16.4-alpine
     env_file:
-      - ./audio_analyzer/audio_analyzer/docker_compose.env
+      - audio_analyzer/audio_analyzer/docker-compose.env
 
 volumes:
   static:
