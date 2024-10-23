@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./audio_analyzer
+    volumes:
+      - static:/static
+    env_file:
+      - ./audio_analyzer/audio_analyzer/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres-db
+    command: >
+      /bin/bash -c "python3 manage.py collectstatic --noinput &&
+                    python3 manage.py makemigrations --noinput&&
+                    python3 manage.py migrate --noinput &&
+                    gunicorn audio_analyzer.wsgi:application --bind 0.0.0.0:8000"
+    restart: on-failure
+
+  postgres-db:
+    image: postgres:16.4-alpine
+    env_file:
+      - ./audio_analyzer/audio_analyzer/docker_compose.env
+
+volumes:
+  static:
