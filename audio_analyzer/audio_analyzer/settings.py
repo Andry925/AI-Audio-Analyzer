@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
 
 # Application definition
 
@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
     'debug_toolbar',
+    'django_celery_beat',
+    'django_celery_results',
     'accounts',
     'analyzer_task',
     'prompts'
@@ -79,6 +81,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'audio_analyzer.wsgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(f"{config('REDIS_HOST')}", 6379)],
+        },
+    },
+}
+
+REDIS_LOCATION = f"redis://{config('REDIS_HOST')}"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -176,3 +189,11 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 }
+
+CELERY_BROKER_URL = f'redis://{config("REDIS_HOST")}:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_IMPORTS = ('analyzer_task.tasks','prompts.tasks')
+CELERY_TIMEZONE = 'Europe/Kiev'
