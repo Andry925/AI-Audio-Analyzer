@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'accounts',
     'analyzer_task',
+    'prompts'
 
 ]
 
