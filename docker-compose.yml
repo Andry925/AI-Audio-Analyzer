@@ -22,5 +22,19 @@ services:
     env_file:
       - audio_analyzer/audio_analyzer/docker-compose.env
 
+  redis-server:
+    image: redis:7.2.5-alpine3.20
+
+  celery-worker:
+    container_name: celery
+    build:
+      context: ./audio_analyzer
+    command: celery --app=audio_analyzer worker -l INFO
+    volumes:
+      - ./audio_analyzer:/usr/src/app
+    depends_on:
+      - redis-server
+      - backend
+
 volumes:
   static:
