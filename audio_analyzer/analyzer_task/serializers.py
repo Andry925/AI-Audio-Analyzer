@@ -4,7 +4,7 @@ from .models import AnalyzerTask
 
 
 class AnalyzerTaskSerializer(serializers.ModelSerializer):
-    user_id = serializers.CharField(source='user.username', read_only=True)
+    user_id = serializers.CharField(source='user_id.username', read_only=True)
     audio_file_url = serializers.FileField(required=False)
 
     class Meta:
