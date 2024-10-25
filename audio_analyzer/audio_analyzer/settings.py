@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'accounts',
     'analyzer_task',
-    'prompts'
+    'prompts',
 
 ]
 
