@@ -1,8 +1,11 @@
+from django.core.exceptions import ValidationError
+from prompts.tasks import create_llm_prompt
 from rest_framework import generics, permissions
 from rest_framework.parsers import MultiPartParser, FormParser
-from prompts.tasks import create_llm_prompt
+from rest_framework.response import Response
+
 from .models import AnalyzerTask
-from .serializers import AnalyzerTaskSerializer
+from .serializers import AnalyzerTaskSerializer, AnalyzerTaskEditSerializer
 from .tasks import main
 
 
@@ -40,3 +43,52 @@ class AnalyzerTaskDetailView(generics.RetrieveAPIView):
         queryset = AnalyzerTask.objects.filter(
             user_id=self.request.user).select_related('user_id')
         return queryset.prefetch_related('prompts')
+
+
+class AnalyzerTaskEditView(generics.UpdateAPIView):
+    serializer_class =  AnalyzerTaskEditSerializer
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(kwargs.get('data'), list):
+            kwargs["many"] = True
+            return super().get_serializer(*args, **kwargs)
+
+    def get_queryset(self, ids=None):
+        if ids:
+            queryset = AnalyzerTask.objects.filter(id__in=ids, user_id=self.request.user).select_related(
+                'user_id').prefetch_related('prompts')
+        else:
+            queryset = AnalyzerTask.objects.filter(user_id=self.request.user).select_related(
+                'user_id').prefetch_related('prompts')
+        return queryset
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        ids = self.validate_ids(request.data)
+
+        instances = self.get_queryset(ids=ids)
+
+        serializer = self.get_serializer(instances, data=request.data, partial=True,
+                                         many=True)
+
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+    def perform_update(self, serializer):
+        serializer.save()
+
+    @staticmethod
+    def validate_ids(data, field="id", unique=True):
+        if isinstance(data, list):
+            id_list = [int(x[field]) for x in data]
+
+            if unique and len(id_list) != len(set(id_list)):
+                raise ValidationError("Multiple updates to a single {} found".format(field))
+
+            return id_list
+
+        return [data]
