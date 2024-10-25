@@ -4,7 +4,10 @@ from django.db import models
 
 class Prompt(models.Model):
     prompt_content = models.TextField()
-    task_id = models.ForeignKey(AnalyzerTask, on_delete=models.CASCADE, related_name='prompts')
+    task_id = models.ForeignKey(
+        AnalyzerTask,
+        on_delete=models.CASCADE,
+        related_name='prompts')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

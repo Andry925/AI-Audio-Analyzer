@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'accounts',
     'analyzer_task',
-    'prompts'
+    'prompts',
 
 ]
 
@@ -150,8 +150,8 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = 'static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/mediafiles/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
 INTERNAL_IPS = [
     # ...
