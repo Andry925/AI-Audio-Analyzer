@@ -67,7 +67,7 @@ def save_transcript(url):
     return data.get('text')
 
 
-@shared_task
+
 def main(analyzer_task_id):
     task = AnalyzerTask.objects.get(id=analyzer_task_id)
     audio_filename = task.audio_file_url
