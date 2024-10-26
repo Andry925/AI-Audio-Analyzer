@@ -17,7 +17,7 @@ def create_llm_prompt(analyzer_task_id):
     midjourney_template = f"""
         Given the song text:
 
-        1. Understand this MidJourney Prompt Formula:
+        1. Understand this MidJourney Prompt Formula do not wrapt it into brackets:
            {hint_to_llm}
 
         2. Based on the song's text {audio_text}, write me MidJourney prompts that use the formula to reflect its essence.
