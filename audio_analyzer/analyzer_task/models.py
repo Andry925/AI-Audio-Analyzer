@@ -18,8 +18,8 @@ def upload_to(instance, filename):
 class AnalyzerTask(models.Model):
     AUDIO_LANGUAGE_CHOICES = [
         ('uk', 'uk'),
-        ('eng', 'eng'),
-        ('rus', 'rus'),
+        ('en', 'en'),
+        ('ru', 'ru'),
     ]
 
     name = models.TextField(max_length=255)
