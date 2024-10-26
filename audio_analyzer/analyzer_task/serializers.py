@@ -32,8 +32,7 @@ class AnalyzerTaskBulkUpdateSerializer(serializers.ListSerializer):
             if not (field.is_relation or field.auto_created)
         ]
         writable_fields = [
-            child_field for child_field in self.child.Meta.fields if child_field in concrete_fields
-        ]
+            child_field for child_field in self.child.Meta.fields if child_field in concrete_fields]
 
         try:
             self.child.Meta.model.objects.bulk_update(result, writable_fields)
@@ -52,5 +51,3 @@ class AnalyzerTaskEditSerializer(serializers.ModelSerializer):
         model = AnalyzerTask
         fields = ['id', 'name', 'prompts']
         list_serializer_class = AnalyzerTaskBulkUpdateSerializer
-
-

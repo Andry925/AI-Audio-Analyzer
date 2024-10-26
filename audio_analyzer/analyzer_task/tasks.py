@@ -1,5 +1,4 @@
 import time
-
 import requests
 from django.db import IntegrityError
 
@@ -27,7 +26,7 @@ def upload(file_obj):
 def transcribe(audio_url, audio_language):
     transcript_request = {
         'audio_url': audio_url,
-        'language_code': 'uk'
+        'language_code': audio_language
     }
     response = requests.post(
         TRANSCRIPT_ENDPOINT,
