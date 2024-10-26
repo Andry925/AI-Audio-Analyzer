@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'accounts',
     'analyzer_task',
     'prompts',
+    'drf_yasg',
 
 ]
 
