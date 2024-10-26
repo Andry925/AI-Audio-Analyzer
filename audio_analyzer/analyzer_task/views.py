@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from prompts.tasks import create_llm_prompt
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 
@@ -22,11 +22,11 @@ class AnalyzerTaskListView(generics.ListCreateAPIView):
                 audio_file_language=audio_record_language,
                 audio_file_url=audio_file,
                 user_id=self.request.user)
-            main.delay(analyzer_task_id=current_analyzer_task)
+            main(analyzer_task_id=current_analyzer_task.id)
         else:
             current_analyzer_task = serializer.save(user_id=self.request.user)
 
-        create_llm_prompt.delay(current_analyzer_task.id)
+        create_llm_prompt(current_analyzer_task.id)
 
     def get_queryset(self):
         queryset = AnalyzerTask.objects.filter(
@@ -46,7 +46,7 @@ class AnalyzerTaskDetailView(generics.RetrieveAPIView):
 
 
 class AnalyzerTaskEditView(generics.UpdateAPIView):
-    serializer_class =  AnalyzerTaskEditSerializer
+    serializer_class = AnalyzerTaskEditSerializer
     permission_classes = [permissions.IsAuthenticated, ]
 
     def get_serializer(self, *args, **kwargs):
@@ -78,6 +78,7 @@ class AnalyzerTaskEditView(generics.UpdateAPIView):
         self.perform_update(serializer)
 
         return Response(serializer.data)
+
     def perform_update(self, serializer):
         serializer.save()
 
@@ -92,3 +93,21 @@ class AnalyzerTaskEditView(generics.UpdateAPIView):
             return id_list
 
         return [data]
+
+
+class AnalyzerTaskRemoveView(generics.DestroyAPIView):
+    serializer_class = AnalyzerTaskEditSerializer
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def get_queryset(self):
+        queryset = AnalyzerTask.objects.filter(
+            user_id=self.request.user).select_related('user_id')
+        return queryset.prefetch_related('prompts')
+
+    def destroy(self, request, *args, **kwargs):
+        ids = request.data.get("ids")
+        if not isinstance(ids, list) or not all(isinstance(id, int) for id in ids):
+            return Response({"detail": "provide correct ids list"}, status=status.HTTP_400_BAD_REQUEST)
+        queryset = self.get_queryset().filter(id__in=ids)
+        queryset.delete()
+        return Response({"detail": "deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
