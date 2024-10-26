@@ -56,7 +56,8 @@ class TestAuthentication(APITestCase):
             "password": "superpass2232",
             "email": "some@gmail.com",
         }
-        response = self.client.post(reverse('login-user'), data=data, format='json')
+        response = self.client.post(
+            reverse('login-user'), data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_logout(self):

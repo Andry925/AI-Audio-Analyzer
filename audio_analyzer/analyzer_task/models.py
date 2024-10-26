@@ -14,6 +14,7 @@ DEFAULT_MIDJOURNEY_FORMULA = (
 def upload_to(instance, filename):
     return f'audios/{filename}'
 
+
 class AnalyzerTask(models.Model):
     AUDIO_LANGUAGE_CHOICES = [
         ('uk', 'uk'),
@@ -22,7 +23,9 @@ class AnalyzerTask(models.Model):
     ]
 
     name = models.TextField(max_length=255)
-    audio_file_url = models.FileField(upload_to=upload_to, null=True, blank=True) # You can add more languages but by default there are three
+    # You can add more languages but by default there are three
+    audio_file_url = models.FileField(
+        upload_to=upload_to, null=True, blank=True)
     audio_file_language = models.TextField(
         max_length=20,
         choices=AUDIO_LANGUAGE_CHOICES,

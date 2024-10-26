@@ -13,6 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 class AudioCustomPaginator(PageNumberPagination):
     page_size = 5
 
+
 class AnalyzerTaskListView(generics.ListCreateAPIView):
     serializer_class = AnalyzerTaskSerializer
     permission_classes = [permissions.IsAuthenticated, ]
