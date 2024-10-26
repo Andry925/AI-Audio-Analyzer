@@ -11,7 +11,7 @@ from .models import Prompt
 OPENAI_API_KEY = config('OPENAI_API_KEY')
 
 
-@shared_task
+
 def create_llm_prompt(analyzer_task_id):
     analyzer_task = AnalyzerTask.objects.get(pk=analyzer_task_id)
     audio_text = analyzer_task.task_text
