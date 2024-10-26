@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.db import models
 
+DEFAULT_MIDJOURNEY_FORMULA = ("subject description", "5 descriptive keywords", "camera type",
+                              "camera lens type", "time of day", "style of photograph", "type of film")
+
 
 def upload_to(instance, filename):
     return f'audios/{filename}'
@@ -17,7 +20,7 @@ class AnalyzerTask(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='tasks')
-    helper_instruction = models.TextField(null=True, blank=True)
+    helper_instruction = models.TextField(null=True, blank=True, default=DEFAULT_MIDJOURNEY_FORMULA)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
