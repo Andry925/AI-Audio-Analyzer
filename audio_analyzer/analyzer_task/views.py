@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from .models import AnalyzerTask
 from .serializers import AnalyzerTaskSerializer, AnalyzerTaskEditSerializer
-from .tasks import main
+from .tasks import run_audio_transcription
 
 
 class AnalyzerTaskListView(generics.ListCreateAPIView):
@@ -22,7 +22,7 @@ class AnalyzerTaskListView(generics.ListCreateAPIView):
                 audio_file_language=audio_record_language,
                 audio_file_url=audio_file,
                 user_id=self.request.user)
-            main(analyzer_task_id=current_analyzer_task.id)
+            run_audio_transcription(analyzer_task_id=current_analyzer_task.id, audio_file_language=audio_record_language)
         else:
             current_analyzer_task = serializer.save(user_id=self.request.user)
 

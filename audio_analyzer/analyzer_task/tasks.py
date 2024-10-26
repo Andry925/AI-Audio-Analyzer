@@ -1,7 +1,8 @@
 import time
+
 import requests
-from celery import shared_task
 from django.db import IntegrityError
+
 from .constants import CHUNK_SIZE, UPLOAD_ENDPOINT, HEADERS_AUTH_ONLY, TRANSCRIPT_ENDPOINT, HEADERS
 from .models import AnalyzerTask
 
@@ -11,72 +12,63 @@ DEFAULT_TIMEOUT = 10
 def upload(file_obj):
     def read_file(file_obj):
         file_obj.seek(0)
-        while True:
-            data = file_obj.read(CHUNK_SIZE)
-            if not data:
-                break
-            yield data
+        while chunk := file_obj.read(CHUNK_SIZE):
+            yield chunk
 
-    upload_response = requests.post(
+    response = requests.post(
         UPLOAD_ENDPOINT,
         headers=HEADERS_AUTH_ONLY,
         data=read_file(file_obj),
         timeout=DEFAULT_TIMEOUT
     )
-    return upload_response.json()['upload_url']
+    return response.json().get('upload_url')
 
 
-def transcribe(audio_url):
+def transcribe(audio_url, audio_language):
     transcript_request = {
         'audio_url': audio_url,
         'language_code': 'uk'
     }
-
-    transcript_response = requests.post(
+    response = requests.post(
         TRANSCRIPT_ENDPOINT,
         json=transcript_request,
         headers=HEADERS,
         timeout=DEFAULT_TIMEOUT
     )
-    return transcript_response.json()['id']
+    return response.json().get('id')
 
 
-def poll(transcript_id):
-    polling_endpoint = TRANSCRIPT_ENDPOINT + '/' + transcript_id
-    polling_response = requests.get(
-        polling_endpoint,
-        headers=HEADERS,
-        timeout=DEFAULT_TIMEOUT
-    )
-    return polling_response.json()
-
-
-def get_transcription_result_url(url):
-    transcribe_id = transcribe(url)
+def poll_transcription(transcript_id):
+    polling_endpoint = f"{TRANSCRIPT_ENDPOINT}/{transcript_id}"
     while True:
-        data = poll(transcribe_id)
+        response = requests.get(
+            polling_endpoint,
+            headers=HEADERS,
+            timeout=DEFAULT_TIMEOUT
+        )
+        data = response.json()
         if data['status'] == 'completed':
             return data, None
         elif data['status'] == 'error':
-            return data, data['error']
+            return data, data.get('error')
         time.sleep(1)
 
 
-def save_transcript(url):
-    data, error = get_transcription_result_url(url)
+def get_transcription_text(audio_url, audio_language):
+    transcribe_id = transcribe(audio_url, audio_language)
+    data, error = poll_transcription(transcribe_id)
+    if error:
+        print(f"Transcription error: {error}")
     return data.get('text')
 
 
+def process_transcription(task, audio_file_language):
+    audio_url = upload(task.audio_file_url)
 
-def main(analyzer_task_id):
-    task = AnalyzerTask.objects.get(id=analyzer_task_id)
-    audio_filename = task.audio_file_url
+    transcribed_text = get_transcription_text(audio_url, audio_file_language)
 
-    audio_url = upload(audio_filename)
-    extracted_text = save_transcript(audio_url)
-
-    if extracted_text:
-        task.task_text = extracted_text
+    if transcribed_text:
+        task.task_text = transcribed_text
         try:
             task.save()
             print("Task saved successfully.")
@@ -86,3 +78,8 @@ def main(analyzer_task_id):
         print("Task after refresh:", task.task_text)
     else:
         print("No extracted text to save.")
+
+
+def run_audio_transcription(analyzer_task_id, audio_file_language):
+    task = AnalyzerTask.objects.get(id=analyzer_task_id)
+    process_transcription(task, audio_file_language)

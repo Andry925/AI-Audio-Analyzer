@@ -1,7 +1,6 @@
 import json
 
 from analyzer_task.models import AnalyzerTask
-from celery import shared_task
 from decouple import config
 from langchain.prompts.prompt import PromptTemplate
 from langchain_openai import ChatOpenAI
@@ -11,20 +10,19 @@ from .models import Prompt
 OPENAI_API_KEY = config('OPENAI_API_KEY')
 
 
-
 def create_llm_prompt(analyzer_task_id):
     analyzer_task = AnalyzerTask.objects.get(pk=analyzer_task_id)
     audio_text = analyzer_task.task_text
     hint_to_llm = analyzer_task.helper_instruction
-    midjourney_template = """
+    midjourney_template = f"""
         Given the song text:
 
         1. Understand this MidJourney Prompt Formula:
-           "subject description", "5 descriptive keywords", "camera type", "camera lens type", "time of day", "style of photograph", "type of film"
+           {hint_to_llm}
 
         2. Based on the song's text {audio_text}, write me MidJourney prompts that use the formula to reflect its essence.
 
-        3. Provide only the resulting prompts where prompt number is a key and prompt text is a value as json, return prompts without quotes.
+        3. Provide only the resulting prompts where prompt number is a key and prompt text is a value as json, return prompts without quotes and brackets.
     """
     midjourney_prompt_template = PromptTemplate(
         input_variables=["audio_text"],
