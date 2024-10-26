@@ -13,5 +13,8 @@ urlpatterns = [
     path(
         'task-bulk-update', views.AnalyzerTaskEditView.as_view(),
         name='task-bulk-update'
+    ),
+    path(
+        'task-bulk-delete', views.AnalyzerTaskRemoveView.as_view(),
     )
 ]
