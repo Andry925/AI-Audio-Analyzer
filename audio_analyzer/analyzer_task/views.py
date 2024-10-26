@@ -22,7 +22,9 @@ class AnalyzerTaskListView(generics.ListCreateAPIView):
                 audio_file_language=audio_record_language,
                 audio_file_url=audio_file,
                 user_id=self.request.user)
-            run_audio_transcription(analyzer_task_id=current_analyzer_task.id, audio_file_language=audio_record_language)
+            run_audio_transcription(
+                analyzer_task_id=current_analyzer_task.id,
+                audio_file_language=audio_record_language)
         else:
             current_analyzer_task = serializer.save(user_id=self.request.user)
 
@@ -56,11 +58,12 @@ class AnalyzerTaskEditView(generics.UpdateAPIView):
 
     def get_queryset(self, ids=None):
         if ids:
-            queryset = AnalyzerTask.objects.filter(id__in=ids, user_id=self.request.user).select_related(
-                'user_id').prefetch_related('prompts')
+            queryset = AnalyzerTask.objects.filter(
+                id__in=ids,
+                user_id=self.request.user).select_related('user_id').prefetch_related('prompts')
         else:
-            queryset = AnalyzerTask.objects.filter(user_id=self.request.user).select_related(
-                'user_id').prefetch_related('prompts')
+            queryset = AnalyzerTask.objects.filter(
+                user_id=self.request.user).select_related('user_id').prefetch_related('prompts')
         return queryset
 
     def put(self, request, *args, **kwargs):
@@ -71,8 +74,8 @@ class AnalyzerTaskEditView(generics.UpdateAPIView):
 
         instances = self.get_queryset(ids=ids)
 
-        serializer = self.get_serializer(instances, data=request.data, partial=True,
-                                         many=True)
+        serializer = self.get_serializer(
+            instances, data=request.data, partial=True, many=True)
 
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -88,7 +91,8 @@ class AnalyzerTaskEditView(generics.UpdateAPIView):
             id_list = [int(x[field]) for x in data]
 
             if unique and len(id_list) != len(set(id_list)):
-                raise ValidationError("Multiple updates to a single {} found".format(field))
+                raise ValidationError(
+                    "Multiple updates to a single {} found".format(field))
 
             return id_list
 
@@ -106,8 +110,15 @@ class AnalyzerTaskRemoveView(generics.DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         ids = request.data.get("ids")
-        if not isinstance(ids, list) or not all(isinstance(id, int) for id in ids):
-            return Response({"detail": "provide correct ids list"}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(
+                ids,
+                list) or not all(
+                isinstance(
+                id,
+                int) for id in ids):
+            return Response({"detail": "provide correct ids list"},
+                            status=status.HTTP_400_BAD_REQUEST)
         queryset = self.get_queryset().filter(id__in=ids)
         queryset.delete()
-        return Response({"detail": "deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "deleted successfully"},
+                        status=status.HTTP_204_NO_CONTENT)
