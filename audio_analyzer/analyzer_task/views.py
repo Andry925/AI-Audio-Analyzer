@@ -7,12 +7,18 @@ from rest_framework.response import Response
 from .models import AnalyzerTask
 from .serializers import AnalyzerTaskSerializer, AnalyzerTaskEditSerializer
 from .tasks import run_audio_transcription
+from rest_framework.pagination import PageNumberPagination
+
+
+class AudioCustomPaginator(PageNumberPagination):
+    page_size = 5
 
 
 class AnalyzerTaskListView(generics.ListCreateAPIView):
     serializer_class = AnalyzerTaskSerializer
     permission_classes = [permissions.IsAuthenticated, ]
     parser_classes = [MultiPartParser, FormParser]
+    pagination_class = AudioCustomPaginator
 
     def perform_create(self, serializer):
         audio_file = self.request.FILES.get('audio_file_url')
